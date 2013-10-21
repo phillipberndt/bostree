@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall -fPIC
+CFLAGS=-g -Wall -fPIC -O2
 
 .PHONY: all
 all: bos libbostree.so

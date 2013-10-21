@@ -38,6 +38,8 @@ int main() {
 		bostree_insert(tree, data, "Value");
 	}
 
+	bostree_remove(tree, bostree_lookup(tree, "P"));
+
 #ifndef NDEBUG
 	bostree_print(tree);
 #endif

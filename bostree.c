@@ -24,7 +24,19 @@
 
 #include "bostree.h"
 #include <stdlib.h>
+#include <stddef.h>
 #include <assert.h>
+
+/* Macro to simplify the definition of left/right symmetric functions */
+#define BOSTREE_LR_SYMMETRIC(x) \
+	size_t _bosnode_left_offset        = x == 1 ? offsetof(BOSNode, left_child_node) : offsetof(BOSNode, right_child_node); \
+	size_t _bosnode_right_offset       = x == 0 ? offsetof(BOSNode, left_child_node) : offsetof(BOSNode, right_child_node); \
+	size_t _bosnode_left_count_offset  = x == 1 ? offsetof(BOSNode, left_child_count) : offsetof(BOSNode, right_child_count); \
+	size_t _bosnode_right_count_offset = x == 0 ? offsetof(BOSNode, left_child_count) : offsetof(BOSNode, right_child_count)
+#define BOSTREE_LR_LEFT_CHILD(x)  *(BOSNode**)((char*)x + _bosnode_left_offset)
+#define BOSTREE_LR_RIGHT_CHILD(x) *(BOSNode**)((char*)x + _bosnode_right_offset)
+#define BOSTREE_LR_RIGHT_CHILD_COUNT(x) *(unsigned int *)((char*)x + _bosnode_right_count_offset)
+#define BOSTREE_LR_LEFT_CHILD_COUNT(x)  *(unsigned int *)((char*)x + _bosnode_left_count_offset)
 
 /* Tree structure */
 struct _BOSTree {
@@ -34,6 +46,68 @@ struct _BOSTree {
 };
 
 /* Private helper methods */
+
+/*
+	Recalculate the depth of a node
+*/
+static void _bostree_depth_recalculate(BOSNode *node) {
+	node->depth = node->left_child_node == NULL ? 0 : node->left_child_node->depth + 1;
+	if(node->right_child_node == NULL) {
+		return;
+	}
+	int depth = node->right_child_node->depth + 1;
+	if(depth > node->depth) {
+		node->depth = depth;
+	}
+}
+
+/*
+	Generic rotation method. See below in the _left & _right implementations
+	for what it does.
+*/
+static int _bostree_rotate(BOSTree *tree, BOSNode *node, unsigned char side) {
+	BOSTREE_LR_SYMMETRIC(side);
+
+	if(node->parent_node == NULL) {
+		return -1;
+	}
+
+	BOSNode *old_parent = node->parent_node;
+	BOSNode *old_parent_parent = old_parent->parent_node;
+
+	/* Make left child of node the new right child of parent node */
+	if(BOSTREE_LR_LEFT_CHILD(node) != NULL) {
+		(BOSTREE_LR_LEFT_CHILD(node))->parent_node = old_parent;
+		assert((BOSTREE_LR_LEFT_CHILD(node))->parent_node != BOSTREE_LR_LEFT_CHILD(node));
+	}
+	BOSTREE_LR_RIGHT_CHILD(old_parent) = BOSTREE_LR_LEFT_CHILD(node);
+	BOSTREE_LR_RIGHT_CHILD_COUNT(old_parent) = BOSTREE_LR_LEFT_CHILD_COUNT(node);
+	_bostree_depth_recalculate(old_parent);
+
+	/* Make old parent new left child of node */
+	old_parent->parent_node = node;
+	assert(old_parent->parent_node != old_parent);
+	BOSTREE_LR_LEFT_CHILD(node) = old_parent;
+	BOSTREE_LR_LEFT_CHILD_COUNT(node) = old_parent->right_child_count + old_parent->left_child_count + 1;
+	_bostree_depth_recalculate(node);
+
+	/* Replace parent node with new parent node */
+	node->parent_node = old_parent_parent;
+	assert(node->parent_node != node);
+	if(old_parent_parent == NULL) {
+		tree->root_node = node;
+	}
+	else if(BOSTREE_LR_LEFT_CHILD(old_parent_parent) == old_parent) {
+		BOSTREE_LR_LEFT_CHILD(old_parent_parent) = node;
+		_bostree_depth_recalculate(old_parent_parent);
+	}
+	else {
+		BOSTREE_LR_RIGHT_CHILD(old_parent_parent) = node;
+		_bostree_depth_recalculate(old_parent_parent);
+	}
+
+	return 0;
+}
 
 /*
   Left rotation. Transforms a tree as follows:
@@ -46,58 +120,9 @@ struct _BOSTree {
   success.
  */
 static int _bostree_rotate_left(BOSTree *tree, BOSNode *node) {
-	if(node->parent_node == NULL) {
-		return -1;
-	}
-
-	BOSNode *old_parent = node->parent_node;
-	BOSNode *old_parent_parent = old_parent->parent_node;
-
-	/* Make left child of node the new right child of parent node */
-	if(node->left_child_node != NULL) {
-		node->left_child_node->parent_node = old_parent;
-		assert(node->left_child_node->parent_node != node->left_child_node);
-	}
-	old_parent->right_child_node  = node->left_child_node;
-	old_parent->right_child_count = node->left_child_count;
-	old_parent->depth = old_parent->left_child_node != NULL ? old_parent->left_child_node->depth + 1 : 0;
-	if(old_parent->right_child_node != NULL && old_parent->right_child_node->depth + 1 > old_parent->depth) {
-		old_parent->depth = old_parent->right_child_node->depth + 1;
-	}
-
-	/* Make old parent new left child of node */
-	old_parent->parent_node = node;
-	assert(old_parent->parent_node != old_parent);
-	node->left_child_node = old_parent;
-	node->left_child_count = old_parent->right_child_count + old_parent->left_child_count + 1;
-	node->depth = old_parent->depth + 1;
-	if(node->right_child_node != NULL && node->right_child_node->depth + 1 > node->depth) {
-		node->depth = node->right_child_node->depth + 1;
-	}
-
-	/* Replace parent node with new parent node */
-	node->parent_node = old_parent_parent;
-	assert(node->parent_node != node);
-	if(old_parent_parent == NULL) {
-		tree->root_node = node;
-	}
-	else if(old_parent_parent->left_child_node == old_parent) {
-		old_parent_parent->left_child_node = node;
-		old_parent_parent->depth = node->depth + 1;
-		if(old_parent_parent->right_child_node != NULL && old_parent_parent->right_child_node->depth + 1 > old_parent_parent->depth) {
-			old_parent_parent->depth = old_parent_parent->right_child_node->depth + 1;
-		}
-	}
-	else {
-		old_parent_parent->right_child_node = node;
-		old_parent_parent->depth = node->depth + 1;
-		if(old_parent_parent->left_child_node != NULL && old_parent_parent->left_child_node->depth + 1 > old_parent_parent->depth) {
-			old_parent_parent->depth = old_parent_parent->left_child_node->depth + 1;
-		}
-	}
-
-	return 0;
+	return _bostree_rotate(tree, node, 1);
 }
+
 
 /*
   Right rotation. Transforms the tree as follows:
@@ -110,57 +135,7 @@ static int _bostree_rotate_left(BOSTree *tree, BOSNode *node) {
   success.
  */
 static int _bostree_rotate_right(BOSTree *tree, BOSNode *node) {
-	if(node->parent_node == NULL) {
-		return -1;
-	}
-
-	BOSNode *old_parent = node->parent_node;
-	BOSNode *old_parent_parent = old_parent->parent_node;
-
-	/* Make right child of node the new left child of parent node */
-	if(node->right_child_node != NULL) {
-		node->right_child_node->parent_node = old_parent;
-		assert(node->right_child_node->parent_node != node->right_child_node);
-	}
-	old_parent->left_child_node  = node->right_child_node;
-	old_parent->left_child_count = node->right_child_count;
-	old_parent->depth = old_parent->right_child_node != NULL ? old_parent->right_child_node->depth + 1 : 0;
-	if(old_parent->left_child_node != NULL && old_parent->left_child_node->depth + 1 > old_parent->depth) {
-		old_parent->depth = old_parent->left_child_node->depth + 1;
-	}
-
-	/* Make old parent new right child of node */
-	old_parent->parent_node = node;
-	assert(old_parent->parent_node != old_parent);
-	node->right_child_node = old_parent;
-	node->right_child_count = old_parent->left_child_count + old_parent->right_child_count + 1;
-	node->depth = old_parent->depth + 1;
-	if(node->left_child_node != NULL && node->left_child_node->depth + 1 > node->depth) {
-		node->depth = node->left_child_node->depth + 1;
-	}
-
-	/* Replace parent node with new parent node */
-	node->parent_node = old_parent_parent;
-	assert(node->parent_node != node);
-	if(old_parent_parent == NULL) {
-		tree->root_node = node;
-	}
-	else if(old_parent_parent->left_child_node == old_parent) {
-		old_parent_parent->left_child_node = node;
-		old_parent_parent->depth = node->depth + 1;
-		if(old_parent_parent->right_child_node != NULL && old_parent_parent->right_child_node->depth + 1 > old_parent_parent->depth) {
-			old_parent_parent->depth = old_parent_parent->right_child_node->depth + 1;
-		}
-	}
-	else {
-		old_parent_parent->right_child_node = node;
-		old_parent_parent->depth = node->depth + 1;
-		if(old_parent_parent->left_child_node != NULL && old_parent_parent->left_child_node->depth + 1 > old_parent_parent->depth) {
-			old_parent_parent->depth = old_parent_parent->left_child_node->depth + 1;
-		}
-	}
-
-	return 0;
+	return _bostree_rotate(tree, node, 0);
 }
 
 /*
@@ -180,7 +155,7 @@ static BOSNode *_bostree_rebalance(BOSTree *tree, BOSNode *node) {
 		_bostree_rotate_right(tree, node->left_child_node);
 		node = node->parent_node;
 	}
-	if(balance < -1) {
+	else if(balance < -1) {
 		if(node->right_child_node->left_child_node != NULL && (node->right_child_node->right_child_node == NULL || node->right_child_node->left_child_node->depth > node->right_child_node->right_child_node->depth)) {
 			_bostree_rotate_right(tree, node->right_child_node->left_child_node);
 		}
@@ -209,34 +184,8 @@ BOSTree *bostree_new(BOSTree_cmp_function cmp_function) {
 */
 void bostree_destroy(BOSTree *tree) {
 	BOSNode *node = tree->root_node;
-	if(tree->root_node != NULL) {
-		while(node->left_child_node != NULL) {
-			node = node->left_child_node;
-		}
-		while(node->parent_node != NULL) {
-			if(node->parent_node->left_child_node == node) {
-				node = node->parent_node;
-				free(node->left_child_node);
-				if(node->right_child_node != NULL) {
-					node = node->right_child_node;
-					while(node->left_child_node != NULL || node->right_child_node != NULL) {
-						if(node->left_child_node != NULL) {
-							node = node->left_child_node;
-						}
-						else {
-							node = node->right_child_node;
-						}
-					}
-				}
-			}
-			else {
-				while(node->parent_node != NULL && node == node->parent_node->right_child_node) {
-					node = node->parent_node;
-					free(node->right_child_node);
-				}
-			}
-		}
-		free(node);
+	while(tree->root_node != NULL) {
+		bostree_remove(tree, bostree_select(tree, 0));
 	}
 	free(tree);
 }
@@ -287,8 +236,13 @@ BOSNode *bostree_insert(BOSTree *tree, void *key, void *data) {
 	*/
 	BOSNode *bubble = new_node;
 	while(bubble != NULL) {
-		if(bubble->parent_node != NULL && bubble->parent_node->depth < bubble->depth + 1) {
-			bubble->parent_node->depth++;
+		if(bubble->parent_node != NULL) {
+			if(bubble->parent_node->depth < bubble->depth + 1) {
+				bubble->parent_node->depth++;
+			}
+			else {
+				break;
+			}
 		}
 
 		bubble = _bostree_rebalance(tree, bubble);
@@ -334,15 +288,7 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 	}
 	/* If not, we find the largest element of the left sub-tree and use that */
 	else {
-		BOSNode *replacer = node->left_child_node;
-		while(replacer->right_child_node != NULL || replacer->left_child_node != NULL) {
-			if(replacer->right_child_node != NULL) {
-				replacer = replacer->right_child_node;
-			}
-			else {
-				replacer = replacer->left_child_node;
-			}
-		}
+		BOSNode *replacer = bostree_previous_node(node);
 		BOSNode *iterator = replacer;
 		if(iterator->parent_node->left_child_node == iterator) {
 			iterator->parent_node->left_child_node = NULL;
@@ -358,23 +304,11 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 		while(iterator != *reparent_location && iterator->parent_node != NULL) {
 			if(iterator->parent_node->left_child_node == iterator) {
 				iterator->parent_node->left_child_count--;
-				iterator->parent_node->depth = iterator->depth + 1;
-				if(iterator->parent_node->right_child_node != NULL) {
-					int depth_other = iterator->parent_node->right_child_node->depth + 1;
-					if(depth_other > iterator->parent_node->depth) {
-						iterator->parent_node->depth = depth_other;
-					}
-				}
+				_bostree_depth_recalculate(iterator->parent_node);
 			}
 			else {
 				iterator->parent_node->right_child_count--;
-				iterator->parent_node->depth = iterator->depth + 1;
-				if(iterator->parent_node->left_child_node != NULL) {
-					int depth_other = iterator->parent_node->left_child_node->depth + 1;
-					if(depth_other > iterator->parent_node->depth) {
-						iterator->parent_node->depth = depth_other;
-					}
-				}
+				_bostree_depth_recalculate(iterator->parent_node);
 			}
 			iterator = iterator->parent_node;
 		}
@@ -384,22 +318,16 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 		replacer->right_child_node = node->right_child_node;
 		replacer->right_child_count = node->right_child_count;
 		if(replacer->right_child_node != NULL) {
-			replacer->depth = node->right_child_node->depth + 1;
 			replacer->right_child_node->parent_node = replacer;
 			assert(replacer->right_child_node->parent_node != replacer->right_child_node);
-		}
-		else {
-			replacer->depth = 0;
 		}
 		replacer->left_child_node = node->left_child_node;
 		replacer->left_child_count = node->left_child_count;
 		if(replacer->left_child_node != NULL) {
-			if(replacer->left_child_node->depth + 1 > replacer->depth) {
-				replacer->depth = replacer->left_child_node->depth + 1;
-			}
 			replacer->left_child_node->parent_node = replacer;
 			assert(replacer->left_child_node->parent_node != replacer->left_child_node);
 		}
+		_bostree_depth_recalculate(replacer);
 	}
 
 	if(*reparent_location != NULL) {
@@ -410,6 +338,10 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 
 	/* Fix depth and child count at the parent node */
 	if(node->parent_node != NULL) {
+		/*
+			Comparing the memory addresses instead of the contents here is
+			important if *reparent_location == NULL
+		*/
 		if(&node->parent_node->left_child_node == reparent_location) {
 			node->parent_node->left_child_count--;
 		}
@@ -417,37 +349,20 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 			node->parent_node->right_child_count--;
 		}
 
-		node->parent_node->depth = (node->parent_node->left_child_node != NULL ? node->parent_node->left_child_node->depth + 1: 0);
-		int depth_other = (node->parent_node->right_child_node != NULL ? node->parent_node->right_child_node->depth + 1 : 0);
-		if(depth_other > node->parent_node->depth) {
-			node->parent_node->depth = depth_other;
-		}
+		_bostree_depth_recalculate(node->parent_node);
 
 		/* Fix depth and child counts down to the root */
 		BOSNode *iterator = node->parent_node;
 		while(iterator->parent_node != NULL) {
 			if(iterator->parent_node->left_child_node == iterator) {
 				iterator->parent_node->left_child_count--;
-				iterator->parent_node->depth = iterator->depth + 1;
-				if(iterator->parent_node->right_child_node != NULL) {
-					int depth_other = iterator->parent_node->right_child_node->depth + 1;
-					if(depth_other > iterator->parent_node->depth) {
-						iterator->parent_node->depth = depth_other;
-					}
-				}
 			}
 			else {
 				iterator->parent_node->right_child_count--;
-				iterator->parent_node->depth = iterator->depth + 1;
-				if(iterator->parent_node->left_child_node != NULL) {
-					int depth_other = iterator->parent_node->left_child_node->depth + 1;
-					if(depth_other > iterator->parent_node->depth) {
-						iterator->parent_node->depth = depth_other;
-					}
-				}
 			}
 
 			iterator = _bostree_rebalance(tree, iterator);
+			_bostree_depth_recalculate(iterator->parent_node);
 			iterator = iterator->parent_node;
 		}
 	}
