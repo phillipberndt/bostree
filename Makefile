@@ -1,12 +1,12 @@
 CFLAGS=-g -Wall -fPIC
 
 .PHONY: all
-all: bos bostree.so
+all: bos libbostree.so
 
-bos: main.o bostree.so
-	$(CC) -o $@ $+
+bos: main.o libbostree.so
+	$(CC) -o $@ $< -L. -lbostree
 
-bostree.so: bostree.o
+libbostree.so: bostree.o
 	$(LD) -shared -o $@ $+
 
 .PHONY: clean
