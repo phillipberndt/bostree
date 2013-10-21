@@ -1,3 +1,5 @@
 *.o
 *.so
 bos
+tests/*
+!tests/*.c
