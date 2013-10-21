@@ -5,11 +5,22 @@
 #include <bostree.h>
 #include "test_helpers.h"
 
-int main() {
+int main(int argc, char *argv[]) {
 	int i;
 	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp);
 	struct timeb t1, t2;
 	float gestime = 0;
+
+	if(argc > 1) {
+		time_t seed = atol(argv[1]);
+		printf("Using seed %lu from command line\n", seed);
+		srand(seed);
+	}
+	else {
+		time_t seed = time(NULL);
+		printf("Using seed %lu\n", seed);
+		srand(seed);
+	}
 
 	for(i=0; i<10000000; i++) {
 		char *name = malloc(32);
