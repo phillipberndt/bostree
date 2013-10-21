@@ -3,3 +3,4 @@
 bos
 tests/*
 !tests/*.c
+libbostree.a
