@@ -240,6 +240,7 @@ BOSNode *bostree_insert(BOSTree *tree, void *key, void *data) {
 				bubble->parent_node->depth++;
 			}
 			else {
+				bubble = _bostree_rebalance(tree, bubble);
 				break;
 			}
 		}
