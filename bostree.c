@@ -183,7 +183,6 @@ BOSTree *bostree_new(BOSTree_cmp_function cmp_function) {
 	Free the memory used by a tree structure and all of its nodes.
 */
 void bostree_destroy(BOSTree *tree) {
-	BOSNode *node = tree->root_node;
 	while(tree->root_node != NULL) {
 		bostree_remove(tree, bostree_select(tree, 0));
 	}
