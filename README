@@ -1,0 +1,14 @@
+BOSTree -- An order statistic, self-balancing AVL tree implementation in C
+
+An order statistic tree is a tree structure with two additional methods,
+rank(node) and select(index), which allow array-like access in O(log n) time.
+The idea is to simply store, for each node, the number of child-nodes.
+
+I did not find a reference implementation for such a tree, so I wrote one
+myself. Right now, the code is not fully optimized yet, id est does some
+unnecessary rebalancing checks. The tests in main.c also need to be extended.
+Also, some not strictly necessary numbers are stored, such as the number of
+sub-nodes of the right child of a node. This allows to calculate the overall
+count quickly, but can be removed to make the structure's overhead smaller.
+
+	Licensed under the terms of the GPLv3.
