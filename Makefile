@@ -1,4 +1,6 @@
-CFLAGS=-g -Wall -fPIC -O2 -I.
+CFLAGS=-g -Wall -O2
+override LDFLAGS+= -L.
+override CFLAGS+= -fPIC -I.
 TESTS=$(patsubst tests/test_helpers,,$(patsubst %.c,%,$(wildcard tests/*.c)))
 
 .PHONY: all
@@ -6,7 +8,7 @@ all: libbostree.so libbostree.a $(TESTS)
 
 .PHONY: test
 test: $(TESTS)
-	for test in $(TESTS); do \
+	@for test in $(TESTS); do \
 		echo "--- Starting: $$test"; \
 		$$test; \
 		if [ "$$?" != "0" ]; then \
@@ -33,7 +35,7 @@ tests/test_helpers.o: tests/test_helpers.c
 	$(CC) -c $(CFLAGS) -o $@ $+
 
 %: %.c tests/test_helpers.o libbostree.so
-	$(CC) -L. -I. -o $@ $< tests/test_helpers.o -lbostree
+	$(CC) $(CFLAGS) -o $@ $< tests/test_helpers.o $(LDFLAGS) -lbostree
 
 .PHONY: clean
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <bostree.h>
+#include <time.h>
 #include "test_helpers.h"
 
 int main(int argc, char *argv[]) {
