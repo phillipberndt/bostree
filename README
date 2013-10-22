@@ -3,12 +3,32 @@ BOSTree -- An order statistic, self-balancing AVL tree implementation in C
 An order statistic tree is a tree structure with two additional methods,
 rank(node) and select(index), which allow array-like access in O(log n) time.
 The idea is to simply store, for each node, the number of child-nodes.
+Self-balancing search trees maintain a minimal height by rebalancing their
+sub-trees.
 
-I did not find a reference implementation for such a tree, so I wrote one
-myself. Right now, the code is not fully optimized yet, id est does some
-unnecessary rebalancing checks. The tests in main.c also need to be extended.
-Also, some not strictly necessary numbers are stored, such as the number of
-sub-nodes of the right child of a node. This allows to calculate the overall
-count quickly, but can be removed to make the structure's overhead smaller.
+I did not find a C reference implementation for such a tree, so I wrote one
+myself. The code is not fully optimized, id est might do some id est might do
+some unnecessary rebalancing checks. Also, some not strictly necessary numbers
+are stored, such as the number of sub-nodes of the right child of a node. This
+allows to calculate the overall count quickly, but can be removed to make the
+structure's overhead smaller.
 
-	Licensed under the terms of the GPLv3.
+The code has now been tested and I consider it ready for field testing. Be
+cautious if using this in production code though.
+
+
+ALTERNATIVES:
+
+· In C++, Policy-Based Data Structures can be used according to
+  http://stackoverflow.com/questions/11230734/c-stl-order-statistic-tree
+  That code probably is much more mature. Use the STL version if C++ is
+  an option!
+
+· If you do not need the order statistic part, there are plenty of balanced
+  tree implementations which suit your use case better. They are better tested
+  and much faster because they do not have the overhead of order statistics. For
+  example, see glib:
+  https://developer.gnome.org/glib/stable/glib-Balanced-Binary-Trees.html
+
+
+Licensed under the terms of the GPLv3.
