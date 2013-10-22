@@ -3,4 +3,5 @@
 bos
 tests/*
 !tests/*.c
+!tests/*.h
 libbostree.a
