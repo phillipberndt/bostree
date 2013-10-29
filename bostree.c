@@ -173,7 +173,7 @@ static BOSNode *_bostree_rebalance(BOSTree *tree, BOSNode *node) {
 	Create a new tree structure
 */
 BOSTree *bostree_new(BOSTree_cmp_function cmp_function) {
-	BOSTree *new_tree = (BOSTree *)malloc(sizeof(BOSTree));
+	BOSTree *new_tree = (BOSTree *)calloc(1, sizeof(BOSTree));
 	new_tree->cmp_function = cmp_function;
 
 	return new_tree;
