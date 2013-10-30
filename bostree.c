@@ -208,6 +208,8 @@ unsigned int bostree_node_count(BOSTree *tree) {
 */
 BOSNode *bostree_insert(BOSTree *tree, void *key, void *data) {
 	BOSNode *new_node = (BOSNode *)calloc(sizeof(BOSNode), 1);
+	new_node->weak_ref_node_valid = 1;
+	new_node->weak_ref_count = 1;
 	new_node->key = key;
 	new_node->data = data;
 
@@ -370,7 +372,32 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 		_bostree_rebalance(tree, tree->root_node);
 	}
 
-	free(node);
+	node->weak_ref_node_valid = 0;
+	bostree_node_weak_unref(node);
+}
+
+/*
+	Create a weak reference to a node
+
+	This simple implementation of weak references really only deletes the node
+	once the last reference to it has been dropped, but it invalidates the node
+	once it has been removed from the tree.
+*/
+BOSNode *bostree_node_weak_ref(BOSNode *node) {
+	node->weak_ref_count++;
+	return node;
+}
+
+/*
+	Remove the weak reference again, returning NULL if the node was unvalid and
+	the node if it is still valid
+*/
+BOSNode *bostree_node_weak_unref(BOSNode *node) {
+	BOSNode *retval = node->weak_ref_node_valid ? node : NULL;
+	if(--node->weak_ref_count == 0) {
+		free(node);
+	}
+	return retval;
 }
 
 /*

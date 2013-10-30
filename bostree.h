@@ -40,6 +40,9 @@ struct _BOSNode {
 
 	void *key;
 	void *data;
+
+	unsigned char weak_ref_count      : 7;
+	unsigned char weak_ref_node_valid : 1;
 };
 typedef struct _BOSNode BOSNode;
 
@@ -58,6 +61,9 @@ unsigned int bostree_node_count(BOSTree *tree);
 
 BOSNode *bostree_insert(BOSTree *tree, void *key, void *data);
 void bostree_remove(BOSTree *tree, BOSNode *node);
+
+BOSNode *bostree_node_weak_ref(BOSNode *node);
+BOSNode *bostree_node_weak_unref(BOSNode *node);
 
 BOSNode *bostree_lookup(BOSTree *tree, void *key);
 BOSNode *bostree_select(BOSTree *tree, unsigned int index);
