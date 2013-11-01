@@ -55,7 +55,7 @@ static void _bostree_depth_recalculate(BOSNode *node) {
 	if(node->right_child_node == NULL) {
 		return;
 	}
-	int depth = node->right_child_node->depth + 1;
+	unsigned int depth = node->right_child_node->depth + 1;
 	if(depth > node->depth) {
 		node->depth = depth;
 	}
