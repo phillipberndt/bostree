@@ -72,7 +72,7 @@ BOSNode *bostree_next_node(BOSNode *node);
 BOSNode *bostree_previous_node(BOSNode *node);
 unsigned int bostree_rank(BOSNode *node);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && (_BSD_SOURCE || _XOPEN_SOURCE || _POSIX_C_SOURCE >= 200112L)
 void bostree_print(BOSTree *tree);
 #endif
 

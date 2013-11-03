@@ -503,7 +503,7 @@ unsigned int bostree_rank(BOSNode *node) {
 	return rank;
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && (_BSD_SOURCE || _XOPEN_SOURCE || _POSIX_C_SOURCE >= 200112L)
 #include <stdio.h>
 #include <unistd.h>
 
