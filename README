@@ -7,11 +7,11 @@ Self-balancing search trees maintain a minimal height by rebalancing their
 sub-trees.
 
 I did not find a C reference implementation for such a tree, so I wrote one
-myself. The code is not fully optimized, id est might do some id est might do
-some unnecessary rebalancing checks. Also, some not strictly necessary numbers
-are stored, such as the number of sub-nodes of the right child of a node. This
-allows to calculate the overall count quickly, but can be removed to make the
-structure's overhead smaller.
+myself. The code is not fully optimized, id est might do some unnecessary
+rebalancing checks. Also, some not strictly necessary numbers are stored, such
+as the number of sub-nodes of the right child of a node. This allows to
+calculate the overall count quickly, but can be removed to make the structure's
+overhead smaller.
 
 The code has now been tested and I consider it ready for field testing. Be
 cautious if using this in production code though.
