@@ -10,7 +10,7 @@ all: libbostree.so libbostree.a $(TESTS)
 test: $(TESTS)
 	@for test in $(TESTS); do \
 		echo "--- Starting: $$test"; \
-		$$test; \
+		LD_LIBRARY_PATH=. $$test; \
 		if [ "$$?" != "0" ]; then \
 			echo; \
 			echo "FAILED"; \
