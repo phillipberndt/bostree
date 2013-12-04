@@ -514,7 +514,7 @@ unsigned int bostree_rank(BOSNode *node) {
 	look neat on vt100 compatible terminals, i.e. unix/linux consoles.
 */
 
-void _bostree_print_helper(BOSNode *node, unsigned int indent, unsigned int level) {
+static void _bostree_print_helper(BOSNode *node, unsigned int indent, unsigned int level) {
 	printf("\033[%d;%dH", level + 1, indent);
 	fsync(0);
 	printf("%s(%d,%d,%d)", (char *)node->key, node->left_child_count, node->right_child_count, node->depth);
