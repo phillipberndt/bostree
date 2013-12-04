@@ -4,8 +4,22 @@
 
 void test_tree_sanity(BOSTree *tree) {
 	int i;
+
+	int count = 0;
+	BOSNode *node;
+	for(node = bostree_select(tree, 0); node; node = bostree_next_node(node)) {
+		count++;
+	}
+	if(count != bostree_node_count(tree)) {
+		printf("Manual node count yielded %d, order statistics reported %d\n", count, bostree_node_count(tree));
+		exit(1);
+	}
 	for(i=0; i<bostree_node_count(tree); i++) {
-		BOSNode *node = bostree_select(tree, i);
+		node = bostree_select(tree, i);
+		if(node == NULL) {
+			printf("Rank %d node not found, though count is %d\n", i, bostree_node_count(tree));
+			exit(1);
+		}
 		if(bostree_rank(node) != i) {
 			printf("Rank for node %s is %d, but should be %d\n", (char*)node->key, bostree_rank(node), i);
 			exit(1);

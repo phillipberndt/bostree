@@ -5,23 +5,31 @@
 #include <bostree.h>
 #include "test_helpers.h"
 
-int main() {
+BOSTree *test_tree() {
 	BOSTree *t = bostree_new((BOSTree_cmp_function)strcmp);
-	bostree_insert(t, "AA", NULL);
-	bostree_insert(t, "C", NULL);
-	bostree_insert(t, "E", NULL);
-	bostree_insert(t, "G", NULL);
-	bostree_insert(t, "I", NULL);
-	bostree_insert(t, "K", NULL);
-	bostree_insert(t, "M", NULL);
-	bostree_insert(t, "O", NULL);
-	bostree_insert(t, "Q", NULL);
-	bostree_insert(t, "D", NULL);
-	bostree_insert(t, "F", NULL);
-	bostree_insert(t, "A", NULL);
+	char i;
+	for(i='A'; i<'Z'; i++) {
+		char *key = malloc(2);
+		key[0] = i; key[1] = 0;
+		bostree_insert(t, key, NULL);
+	}
 
-	bostree_remove(t, bostree_lookup(t, "C"));
-	test_tree_sanity(t);
+	return t;
+}
+
+int main() {
+	char remove[2];
+	remove[1] = 0;
+	for(*remove='A'; *remove<'Z'; (*remove)++) {
+		BOSTree *t = test_tree();
+		bostree_remove(t, bostree_lookup(t, remove));
+		test_tree_sanity(t);
+		if(bostree_node_count(t) != ('Z' - 'A' - 1)) {
+			printf("Removed one node from a tree, but the node count did not decrease properly.\n");
+			exit(1);
+		}
+		bostree_destroy(t);
+	}
 
 	return 0;
 }

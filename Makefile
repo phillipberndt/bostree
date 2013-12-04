@@ -10,7 +10,7 @@ all: libbostree.so libbostree.a $(TESTS)
 test: $(TESTS)
 	@for test in $(TESTS); do \
 		echo "--- Starting: $$test"; \
-		LD_LIBRARY_PATH=. $$test; \
+		$$test; \
 		if [ "$$?" != "0" ]; then \
 			echo; \
 			echo "FAILED"; \
@@ -35,7 +35,7 @@ tests/test_helpers.o: tests/test_helpers.c
 	$(CC) -c $(CFLAGS) -o $@ $+
 
 %: %.c tests/test_helpers.o libbostree.so
-	$(CC) $(CFLAGS) -o $@ $< tests/test_helpers.o $(LDFLAGS) -lbostree
+	$(CC) $(CFLAGS) -o $@ $< tests/test_helpers.o $(LDFLAGS) -Wl,-rpath=. -lbostree
 
 .PHONY: clean
 
