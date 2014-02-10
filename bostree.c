@@ -304,6 +304,9 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 			iterator->parent_node->right_child_node = replacer->left_child_node;
 			iterator->parent_node->right_child_count = replacer->left_child_count;
 		}
+		if(replacer->left_child_node) {
+			replacer->left_child_node->parent_node = iterator->parent_node;
+		}
 		_bostree_depth_recalculate(iterator->parent_node);
 		iterator = iterator->parent_node;
 		while(iterator != *reparent_location && iterator->parent_node != NULL) {
