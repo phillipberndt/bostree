@@ -6,7 +6,7 @@
 #include "test_helpers.h"
 
 int main() {
-	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp);
+	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp, NULL);
 
 	char iter;
 	printf("Insert test:\n");

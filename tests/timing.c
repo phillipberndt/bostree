@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
 	int i;
-	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp);
+	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp, NULL);
 	struct timeb t1, t2;
 	float gestime = 0;
 

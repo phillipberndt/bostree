@@ -43,6 +43,7 @@ struct _BOSTree {
 	BOSNode *root_node;
 
 	BOSTree_cmp_function cmp_function;
+	BOSTree_free_function free_function;
 };
 
 /* Private helper methods */
@@ -172,9 +173,10 @@ static BOSNode *_bostree_rebalance(BOSTree *tree, BOSNode *node) {
 /*
 	Create a new tree structure
 */
-BOSTree *bostree_new(BOSTree_cmp_function cmp_function) {
+BOSTree *bostree_new(BOSTree_cmp_function cmp_function, BOSTree_free_function free_function) {
 	BOSTree *new_tree = (BOSTree *)calloc(1, sizeof(BOSTree));
 	new_tree->cmp_function = cmp_function;
+	new_tree->free_function = free_function;
 
 	return new_tree;
 }
@@ -374,7 +376,7 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 	}
 
 	node->weak_ref_node_valid = 0;
-	bostree_node_weak_unref(node);
+	bostree_node_weak_unref(tree, node);
 }
 
 /*
@@ -393,9 +395,12 @@ BOSNode *bostree_node_weak_ref(BOSNode *node) {
 	Remove the weak reference again, returning NULL if the node was unvalid and
 	the node if it is still valid
 */
-BOSNode *bostree_node_weak_unref(BOSNode *node) {
+BOSNode *bostree_node_weak_unref(BOSTree *tree, BOSNode *node) {
 	BOSNode *retval = node->weak_ref_node_valid ? node : NULL;
 	if(--node->weak_ref_count == 0) {
+		if(tree->free_function != NULL) {
+			tree->free_function(node);
+		}
 		free(node);
 	}
 	return retval;

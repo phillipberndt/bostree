@@ -31,7 +31,7 @@
 #include "test_helpers.h"
 
 BOSTree *test_tree() {
-	BOSTree *t = bostree_new((BOSTree_cmp_function)strcmp);
+	BOSTree *t = bostree_new((BOSTree_cmp_function)strcmp, NULL);
 	char i;
 	for(i='A'; i<'Z'; i++) {
 		char *key = malloc(2);
