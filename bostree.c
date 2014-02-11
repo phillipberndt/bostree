@@ -258,14 +258,11 @@ BOSNode *bostree_insert(BOSTree *tree, void *key, void *data) {
 
 /*
 	Remove a given node from the tree. The argument must be a node, not the
-	associated key! You can look up nodes using bostree_lookup(). The memory
-	for the key/value is not freed, the node structure itself is.
+	associated key! You can look up nodes using bostree_lookup().
 
-	So you must call
-		free(node->key);
-		free(node->value);
-		bostree_remove(tree, node);
-	to cleanly remove an entry.
+	This function decreases the weak reference count of the deleted node by
+	one. Once it reaches zero, the free() helper is called and the node
+	is freed.
 */
 void bostree_remove(BOSTree *tree, BOSNode *node) {
 	if(node == NULL) {
@@ -395,8 +392,12 @@ BOSNode *bostree_node_weak_ref(BOSNode *node) {
 }
 
 /*
-	Remove the weak reference again, returning NULL if the node was unvalid and
-	the node if it is still valid
+	Remove the weak reference again, returning NULL if the node was invalid and
+	the node if it is still valid.
+
+	Once the weak reference count reaches zero, call the free() helper for
+	the user to delete node->data and node->key. The node structure itself is
+	freed by us.
 */
 BOSNode *bostree_node_weak_unref(BOSTree *tree, BOSNode *node) {
 	BOSNode *retval = node->weak_ref_node_valid ? node : NULL;
