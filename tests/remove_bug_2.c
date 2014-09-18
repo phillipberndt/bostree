@@ -33,11 +33,11 @@ BOSTree *test_tree() {
 int main() {
 	// Prepare the situation from above
 	BOSTree *t = test_tree();
-	bostree_remove(t, bostree_lookup(t, "G"));
-	bostree_remove(t, bostree_lookup(t, "H"));
+	bostree_remove(t, bostree_lookup(t, strdup("G")));
+	bostree_remove(t, bostree_lookup(t, strdup("H")));
 
 	test_tree_sanity(t);
-	if(bostree_lookup(t, "E") == NULL) {
+	if(bostree_lookup(t, strdup("E")) == NULL) {
 		printf("Nodes missing after removing another one\n");
 		exit(1);
 	}

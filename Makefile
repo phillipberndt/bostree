@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall -O2
+CFLAGS=-g -O2 -Wall -Wextra -Wfloat-equal -Wpointer-arith -Wcast-align -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return -Wunreachable-code -Wno-unused-parameter
 override LDFLAGS+= -L.
 override CFLAGS+= -fPIC -I.
 TESTS=$(patsubst tests/test_helpers,,$(patsubst %.c,%,$(wildcard tests/*.c)))

@@ -15,7 +15,7 @@ int main() {
 		*data = iter;
 		data[1] = 0;
 		printf("Insert %s, ", data);
-		bostree_insert(tree, data, "Value");
+		bostree_insert(tree, data, strdup("Value"));
 
 		test_tree_sanity(tree);
 	}

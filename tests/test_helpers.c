@@ -3,9 +3,8 @@
 #include "test_helpers.h"
 
 void test_tree_sanity(BOSTree *tree) {
-	int i;
-
-	int count = 0;
+	unsigned int i;
+	unsigned int count = 0;
 	BOSNode *node;
 	for(node = bostree_select(tree, 0); node; node = bostree_next_node(node)) {
 		count++;

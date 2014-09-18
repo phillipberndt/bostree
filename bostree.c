@@ -33,10 +33,10 @@
 	size_t _bosnode_right_offset       = x == 0 ? offsetof(BOSNode, left_child_node) : offsetof(BOSNode, right_child_node); \
 	size_t _bosnode_left_count_offset  = x == 1 ? offsetof(BOSNode, left_child_count) : offsetof(BOSNode, right_child_count); \
 	size_t _bosnode_right_count_offset = x == 0 ? offsetof(BOSNode, left_child_count) : offsetof(BOSNode, right_child_count)
-#define BOSTREE_LR_LEFT_CHILD(x)  *(BOSNode**)((char*)x + _bosnode_left_offset)
-#define BOSTREE_LR_RIGHT_CHILD(x) *(BOSNode**)((char*)x + _bosnode_right_offset)
-#define BOSTREE_LR_RIGHT_CHILD_COUNT(x) *(unsigned int *)((char*)x + _bosnode_right_count_offset)
-#define BOSTREE_LR_LEFT_CHILD_COUNT(x)  *(unsigned int *)((char*)x + _bosnode_left_count_offset)
+#define BOSTREE_LR_LEFT_CHILD(x)  *(BOSNode**)(void*)((char*)x + _bosnode_left_offset)
+#define BOSTREE_LR_RIGHT_CHILD(x) *(BOSNode**)(void*)((char*)x + _bosnode_right_offset)
+#define BOSTREE_LR_RIGHT_CHILD_COUNT(x) *(unsigned int *)(void*)((char*)x + _bosnode_right_count_offset)
+#define BOSTREE_LR_LEFT_CHILD_COUNT(x)  *(unsigned int *)(void*)((char*)x + _bosnode_left_count_offset)
 
 /* Tree structure */
 struct _BOSTree {
