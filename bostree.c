@@ -527,7 +527,8 @@ unsigned int bostree_rank(BOSNode *node) {
 static void _bostree_print_helper(BOSNode *node, unsigned int indent, unsigned int level) {
 	printf("\033[%d;%dH", level + 1, indent);
 	fsync(0);
-	printf("%s(%d,%d,%d)", (char *)node->key, node->left_child_count, node->right_child_count, node->depth);
+	printf("%s(%d,%d,%d)\n", (char *)node->key, node->left_child_count, node->right_child_count, node->depth);
+	fsync(0);
 
 	if(node->left_child_node != NULL) {
 		_bostree_print_helper(node->left_child_node, indent - (2 << node->depth), level + 1);
