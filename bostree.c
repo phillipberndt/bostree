@@ -388,6 +388,7 @@ void bostree_remove(BOSTree *tree, BOSNode *node) {
 */
 BOSNode *bostree_node_weak_ref(BOSNode *node) {
 	assert(node->weak_ref_count > 0);
+	assert(node->weak_ref_count < 127);
 	node->weak_ref_count++;
 	return node;
 }
