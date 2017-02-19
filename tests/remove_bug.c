@@ -23,6 +23,7 @@
 	from the full tree, each time checking the result for validity.
 
 */
+#define _GNU_SOURCE
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

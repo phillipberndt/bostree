@@ -7,22 +7,23 @@ Self-balancing search trees maintain a minimal height by rebalancing their
 sub-trees.
 
 I did not find a C reference implementation for such a tree, so I wrote one
-myself. The code is not fully optimized, id est might do some unnecessary
-rebalancing checks. Also, some not strictly necessary numbers are stored, such
-as the number of sub-nodes of the right child of a node. This allows to
-calculate the overall count quickly, but can be removed to make the structure's
-overhead smaller.
+myself. This implementation uses map semantics, that is, stores key and value
+as separate pointers.
 
-The code has now been tested and I consider it ready for field testing. Be
-cautious if using this in production code though.
+It stores some not strictly necessary numbers, such as the number of sub-nodes
+of the right child of a node. This allows to calculate the overall count
+quickly, but can be removed to make the structure's overhead smaller.
+
+The code has been extensively tested, is apparently AFL-proof, and leaks no
+memory whatsoever according to valgrind. BOSTree has been in use in pqiv for
+some time now.
 
 
 ALTERNATIVES:
 
-· In C++, Policy-Based Data Structures can be used according to
+· In GNU/C++, Policy-Based Data Structures can be used according to
   http://stackoverflow.com/questions/11230734/c-stl-order-statistic-tree
-  That code probably is much more mature. Use the STL version if C++ is
-  an option!
+  That code probably is much more mature. Use it if this is an option!
 
 · If you do not need the order statistic part, there are plenty of balanced
   tree implementations which suit your use case better. They are better tested

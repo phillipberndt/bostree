@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +58,12 @@ int main(int argc, char *argv[]) {
 		BOSNode *node = bostree_select(tree, w);
 		ftime(&t2);
 		selecttime += (t2.time - t1.time ) * 1000 + t2.millitm - t1.millitm;
+
+		if(!node) {
+			printf("Node missing!\n");
+			test_tree_sanity(tree);
+			exit(1);
+		}
 
 		ftime(&t1);
 		bostree_remove(tree, node);

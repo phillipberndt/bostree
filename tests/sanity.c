@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,8 +7,13 @@
 #include <bostree.h>
 #include "test_helpers.h"
 
+void free_function(BOSNode *node) {
+	free(node->key);
+	free(node->data);
+}
+
 int main() {
-	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp, NULL);
+	BOSTree *tree = bostree_new((BOSTree_cmp_function)strcmp, free_function);
 
 	char iter;
 	printf("Insert test:\n");
@@ -32,10 +39,7 @@ int main() {
 		data[1] = 0;
 		printf("Remove %s, ", data);
 		BOSNode *node = bostree_lookup(tree, data);
-		if(node != NULL) {
-			free(node->key);
-		}
-		else {
+		if(node == NULL) {
 			printf("Lookup for %s showed it was already deleted\n", data);
 			exit(1);
 		}
