@@ -44,8 +44,8 @@ struct _BOSNode {
 	void *key;
 	void *data;
 
-	unsigned char weak_ref_count      : 7;
-	unsigned char weak_ref_node_valid : 1;
+	unsigned char weak_ref_count;
+	unsigned char weak_ref_node_valid;
 };
 typedef struct _BOSNode BOSNode;
 
@@ -148,9 +148,9 @@ unsigned int bostree_rank(BOSNode *node);
 
 #if !defined(NDEBUG) && (_BSD_SOURCE || _XOPEN_SOURCE || _POSIX_C_SOURCE >= 200112L)
 void bostree_print(BOSTree *tree);
-#define bostree_debug(args...) fprintf(stderr, args)
+#define bostree_debug(...) fprintf(stderr, __VA_ARGS__)
 #else
-#define bostree_debug(args...) void
+#define bostree_debug(...) void
 #endif
 
 #endif
